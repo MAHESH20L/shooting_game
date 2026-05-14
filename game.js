@@ -30,10 +30,6 @@ let timeLeft = 60;
 
 let gameOver = false;
 
-let isPaused = false;
-
-let timerEvent;
-
 let target;
 
 let scoreText;
@@ -46,8 +42,6 @@ let yesButton;
 
 let exitButton;
 
-let pauseButton;
-
 function create() {
 
     const width = window.innerWidth;
@@ -56,19 +50,21 @@ function create() {
 
     const isMobile = width < 768;
 
-    const safeTop = isMobile ? 80 : 20;
+    // Safe spacing for mobile/tablet browser bars
 
-    const safeBottom = isMobile ? 140 : 80;
+    const safeTop = isMobile ? 100 : 30;
 
-    // Responsive Sizes
+    const safeBottom = isMobile ? 120 : 80;
+
+    // Responsive text sizes
 
     const titleSize = isMobile ? '22px' : '40px';
 
     const textSize = isMobile ? '15px' : '26px';
 
-    const scoreSize = isMobile ? '18px' : '28px';
+    const scoreSize = isMobile ? '18px' : '30px';
 
-    const buttonSize = isMobile ? '16px' : '22px';
+    const buttonSize = isMobile ? '24px' : '40px';
 
     const resultSize = isMobile ? '24px' : '42px';
 
@@ -106,7 +102,7 @@ function create() {
 
     }
 
-    // Title
+    // Game Title
 
     this.add.text(
 
@@ -142,7 +138,9 @@ function create() {
 
             fontSize:textSize,
 
-            fill:'#ffffff'
+            fill:'#ffffff',
+
+            align:'center'
 
         }
 
@@ -154,7 +152,7 @@ function create() {
 
         15,
 
-        safeTop + 80,
+        safeTop + 85,
 
         'Score: 0',
 
@@ -172,9 +170,9 @@ function create() {
 
     timerText = this.add.text(
 
-        width - 270,
+        width - (isMobile ? 115 : 180),
 
-        safeTop + 80,
+        safeTop + 85,
 
         'Time: 60',
 
@@ -188,93 +186,11 @@ function create() {
 
     );
 
-    // Pause Button
-
-    pauseButton = this.add.text(
-
-        width - 150,
-
-        safeTop + 75,
-
-        'PAUSE',
-
-        {
-
-            fontSize:buttonSize,
-
-            backgroundColor:'#ffaa00',
-
-            padding:{
-                x:12,
-                y:8
-            },
-
-            fill:'#000000'
-
-        }
-
-    )
-
-    .setInteractive()
-
-    .on('pointerdown', () => {
-
-        togglePause();
-
-    });
-
-    // Exit Button
-
-    exitButton = this.add.text(
-
-        width - 70,
-
-        safeTop + 75,
-
-        'EXIT',
-
-        {
-
-            fontSize:buttonSize,
-
-            backgroundColor:'#aa0000',
-
-            padding:{
-                x:12,
-                y:8
-            },
-
-            fill:'#ffffff'
-
-        }
-
-    )
-
-    .setInteractive()
-
-    .on('pointerdown', () => {
-
-        // Return previous page
-
-        if(window.history.length > 1){
-
-            history.back();
-
-        }
-
-        else{
-
-            window.location.href = 'about:blank';
-
-        }
-
-    });
-
     // Target Size
 
     const targetRadius = isMobile ? 28 : 40;
 
-    // Red Dot
+    // Red Dot Target
 
     target = this.add.circle(
 
@@ -288,7 +204,7 @@ function create() {
 
     );
 
-    // Desktop Crosshair
+    // Desktop Crosshair Only
 
     if(!isMobile){
 
@@ -318,13 +234,13 @@ function create() {
 
     this.input.on('pointerdown', pointer => {
 
-        if(gameOver || isPaused) return;
+        if(gameOver) return;
 
         shoot(pointer, this);
 
     });
 
-    // Resize
+    // Responsive Resize
 
     window.addEventListener('resize', () => {
 
@@ -338,43 +254,11 @@ function create() {
 
     });
 
-    // Start
+    // Start Game
 
     moveTarget();
 
     startTimer(this);
-
-}
-
-function togglePause(){
-
-    if(gameOver) return;
-
-    isPaused = !isPaused;
-
-    // Pause
-
-    if(isPaused){
-
-        timerEvent.paused = true;
-
-        pauseButton.setText('RESUME');
-
-        target.setVisible(false);
-
-    }
-
-    // Resume
-
-    else{
-
-        timerEvent.paused = false;
-
-        pauseButton.setText('PAUSE');
-
-        target.setVisible(true);
-
-    }
 
 }
 
@@ -441,11 +325,15 @@ function moveTarget(){
 
     const isMobile = width < 768;
 
-    const safeTop = isMobile ? 180 : 140;
+    // Safe movement area
 
-    const safeBottom = isMobile ? 140 : 80;
+    const safeTop = isMobile ? 220 : 170;
+
+    const safeBottom = isMobile ? 120 : 80;
 
     const radius = target.radius;
+
+    // Prevent target going outside screen
 
     target.x = Phaser.Math.Between(
 
@@ -467,13 +355,13 @@ function moveTarget(){
 
 function startTimer(scene){
 
-    timerEvent = scene.time.addEvent({
+    scene.time.addEvent({
 
         delay:1000,
 
         callback: () => {
 
-            if(gameOver || isPaused) return;
+            if(gameOver) return;
 
             timeLeft--;
 
@@ -500,8 +388,6 @@ function endGame(scene){
     gameOver = true;
 
     target.setVisible(false);
-
-    pauseButton.setVisible(false);
 
     const width = window.innerWidth;
 
@@ -539,7 +425,7 @@ function endGame(scene){
 
     ).setOrigin(0.5);
 
-    // YES
+    // YES BUTTON
 
     yesButton = scene.add.text(
 
@@ -576,6 +462,53 @@ function endGame(scene){
 
     });
 
+    // EXIT BUTTON
+
+    exitButton = scene.add.text(
+
+        width * 0.65,
+
+        height * 0.72,
+
+        'EXIT',
+
+        {
+
+            fontSize:buttonSize,
+
+            backgroundColor:'#aa0000',
+
+            padding:{
+                x:20,
+                y:10
+            },
+
+            fill:'#ffffff'
+
+        }
+
+    )
+
+    .setOrigin(0.5)
+
+    .setInteractive()
+
+    .on('pointerdown', () => {
+
+        if(window.history.length > 1){
+
+            history.back();
+
+        }
+
+        else{
+
+            window.location.href = 'about:blank';
+
+        }
+
+    });
+
 }
 
 function restartGame(scene){
@@ -586,15 +519,11 @@ function restartGame(scene){
 
     gameOver = false;
 
-    isPaused = false;
-
     resultText.destroy();
 
     yesButton.destroy();
 
-    pauseButton.setVisible(true);
-
-    pauseButton.setText('PAUSE');
+    exitButton.destroy();
 
     scoreText.setText('Score: 0');
 
