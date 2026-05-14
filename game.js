@@ -42,6 +42,10 @@ let yesButton;
 
 let exitButton;
 
+// FIXED TIMER VARIABLE
+
+let gameTimer;
+
 function create() {
 
     const width = window.innerWidth;
@@ -353,11 +357,25 @@ function moveTarget(){
 
 }
 
+// FIXED TIMER
+
 function startTimer(scene){
 
-    scene.time.addEvent({
+    // Remove previous timer
 
-        delay:1000,
+    if(gameTimer){
+
+        gameTimer.destroy();
+
+    }
+
+    // Create fresh timer
+
+    gameTimer = scene.time.addEvent({
+
+        delay: 1000,
+
+        loop: true,
 
         callback: () => {
 
@@ -365,19 +383,27 @@ function startTimer(scene){
 
             timeLeft--;
 
+            // Prevent negative timer
+
+            if(timeLeft < 0){
+
+                timeLeft = 0;
+
+            }
+
             timerText.setText(
                 'Time: ' + timeLeft
             );
 
-            if(timeLeft <= 0){
+            // End exactly at 0
+
+            if(timeLeft === 0){
 
                 endGame(scene);
 
             }
 
-        },
-
-        loop:true
+        }
 
     });
 
@@ -388,6 +414,14 @@ function endGame(scene){
     gameOver = true;
 
     target.setVisible(false);
+
+    // STOP TIMER
+
+    if(gameTimer){
+
+        gameTimer.destroy();
+
+    }
 
     const width = window.innerWidth;
 
@@ -511,7 +545,17 @@ function endGame(scene){
 
 }
 
+// FIXED RESTART
+
 function restartGame(scene){
+
+    // Destroy old timer
+
+    if(gameTimer){
+
+        gameTimer.destroy();
+
+    }
 
     score = 0;
 
@@ -532,6 +576,8 @@ function restartGame(scene){
     target.setVisible(true);
 
     moveTarget();
+
+    // Start clean timer
 
     startTimer(scene);
 
